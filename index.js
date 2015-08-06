@@ -130,7 +130,10 @@ function main() {
   var server = new Hapi.Server()
   server.connection({host:'0.0.0.0', port:8080})
   server.route({method:'*', path:'/{path*}', handler:handler})
-  server.register([{register:Good, options:{reporters:[{reporter:ApacheLogFile, events:{response:'*'}, config:'test/test.log'}]}}], registered)
+  server.register([{register:Good, options:{responsePayload:true, reporters:[{reporter:ApacheLogFile, events:{response:'*',tail:'*'}, config:'test/test.log'}]}}], registered)
+  server.on('response', function(R) {
+    //debug('Server response:\n%s', require('util').inspect(R, {depth:10, colors:true}))
+  })
 
   function registered(er) {
     if (er) throw er
@@ -142,7 +145,9 @@ function main() {
 
   function handler(req, reply) {
     var code = +(req.query.code || 200)
-    reply({ok:true, method:req.method, info:req.info, params:req.params, query:req.query})
+    var info = JSON.parse(JSON.stringify(req.info))
+    var link = (Math.random() + '').replace(/^0\./, '')
+    reply('Hello<p><a href="/'+link+'">Page '+link+'</a>')
       .code(code)
   }
 }
