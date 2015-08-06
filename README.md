@@ -1,2 +1,3 @@
-# good-apache-combined
-Apache combined log files for Good process monitor 
+# good-apache-log
+
+Apache combined log files for Good process monitor
