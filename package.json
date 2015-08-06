@@ -32,5 +32,9 @@
   },
   "peerDependencies": {
     "good": ">= 6.x.x"
+  },
+  "devDependencies": {
+    "good": "^6.3.0",
+    "hapi": "^8.8.1"
   }
 }
