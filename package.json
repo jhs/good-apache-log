@@ -1,0 +1,26 @@
+{
+  "name": "good-apache-combined",
+  "version": "1.0.0",
+  "description": "Apache \"combined\" log files for Hapi",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jhs/good-apache-combined.git"
+  },
+  "keywords": [
+    "hapi",
+    "good",
+    "apache",
+    "combined",
+    "log"
+  ],
+  "author": "Jason Smith <jason.h.smith@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jhs/good-apache-combined/issues"
+  },
+  "homepage": "https://github.com/jhs/good-apache-combined#readme"
+}
