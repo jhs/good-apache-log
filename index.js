@@ -1,23 +1,21 @@
 module.exports = ApacheLogFile
 
+
 var fs = require('fs')
 var Path = require('path')
-var debug = require('debug')('good:apache')
+var debug = require('debug')('good:apache:log')
 var Stream = require('stream')
 
 var Hoek = require('hoek');
 var Joi = require('joi');
 var Moment = require('moment');
 var Squeeze = require('good-squeeze').Squeeze;
-var SafeJson = require('good-squeeze').SafeJson;
 
-var Schema = require('./schema');
+var Schema = require('./schema.js')
+var LogFormat = require('./format.js')
 
 
-var FORMATS = { 'combined': '%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"'
-              }
-
-var DEFAULTS = {format:'combined', hup:false}
+var DEFAULTS = {format:'combined', separator:'\n', hup:false}
 
 
 function ApacheLogFile (events, config) {
@@ -33,13 +31,11 @@ function ApacheLogFile (events, config) {
     config = { file: config }
 
   this._settings = Hoek.applyToDefaults(DEFAULTS, config)
-
-  this._settings.format = FORMATS[this._settings.format] || this._settings.format
   debug('Settings: %j', this._settings)
 
   this._streams = {
     squeeze: Squeeze(events),
-    stringify: SafeJson(null, { separator: '\n' })
+    formatter: LogFormat(null, this._settings)
   }
 }
 
@@ -117,13 +113,13 @@ ApacheLogFile.prototype._buildWriteStream = function () {
 function pipeLine (streams) {
   streams.read
     .pipe(streams.squeeze)
-    .pipe(streams.stringify)
+    .pipe(streams.formatter)
     .pipe(streams.write)
 }
 
 function tearDown(streams) {
-  streams.stringify.unpipe(streams.write)
-  streams.squeeze.unpipe(streams.stringify)
+  streams.formatter.unpipe(streams.write)
+  streams.squeeze.unpipe(streams.formatter)
   streams.read.unpipe(streams.squeeze)
 }
 
