@@ -1,0 +1,156 @@
+module.exports = ApacheLogFile
+
+var fs = require('fs')
+var Path = require('path')
+var debug = require('debug')('good:apache')
+var Stream = require('stream')
+
+var Hoek = require('hoek');
+var Joi = require('joi');
+var Moment = require('moment');
+var Squeeze = require('good-squeeze').Squeeze;
+var SafeJson = require('good-squeeze').SafeJson;
+
+var Schema = require('./schema');
+
+
+var FORMATS = { 'combined': '%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"'
+              }
+
+var DEFAULTS = {format:'combined', hup:false}
+
+
+function ApacheLogFile (events, config) {
+  if (!(this instanceof ApacheLogFile))
+    return new ApacheLogFile(events, config)
+
+  debug('Initialize log', {events:events, config:config})
+
+  config = config || false
+  Joi.assert(config, Schema.options);
+
+  if (typeof config == 'string')
+    config = { file: config }
+
+  this._settings = Hoek.applyToDefaults(DEFAULTS, config)
+
+  this._settings.format = FORMATS[this._settings.format] || this._settings.format
+  debug('Settings: %j', this._settings)
+
+  this._streams = {
+    squeeze: Squeeze(events),
+    stringify: SafeJson(null, { separator: '\n' })
+  }
+}
+
+ApacheLogFile.prototype.init = function (stream, emitter, callback) {
+  var self = this
+  debug('Init')
+
+  //emitter.on('stop', function () {
+  //  debug('Stop')
+  //})
+
+  if (self._settings.hup) {
+    debug('Listen to SIGHUP')
+    process.on('SIGHUP', function() {
+      debug('Received SIGHUP')
+      self.teardown()
+      self.openLog()
+    })
+  }
+
+  this._streams.write = this._buildWriteStream()
+  this._streams.read = stream
+
+  pipeLine(this._streams)
+
+  callback()
+}
+
+ApacheLogFile.prototype._buildWriteStream = function () {
+  var self = this
+  debug('buildWriteStream')
+
+  var result = fs.createWriteStream(self._settings.file, {flags:'a', end:false, encoding:'utf8'})
+  result.once('error', function (er) {
+    console.error(er)
+    tearDown(self._streams)
+  })
+
+  return result
+}
+
+
+//internals.setUpRotate = function (reporter, period) {
+//
+//    var now = Moment.utc();
+//
+//    var timeout;
+//
+//    period = period.toLowerCase();
+//    now.endOf(internals.timeMap[period]);
+//    timeout = now.valueOf() - Date.now();
+//
+//    reporter._state.timeout = Bt.setTimeout(function () {
+//
+//        internals.rotate(reporter, period);
+//    }, timeout);
+//
+//};
+//
+//
+//internals.rotate = function (reporter, period) {
+//
+//    internals.tearDown(reporter._streams);
+//    reporter._streams.write = reporter._buildWriteStream();
+//    internals.pipeLine(reporter._streams);
+//    internals.setUpRotate(reporter, period);
+//};
+//
+//
+
+//
+// Utilities
+//
+
+function pipeLine (streams) {
+  streams.read
+    .pipe(streams.squeeze)
+    .pipe(streams.stringify)
+    .pipe(streams.write)
+}
+
+function tearDown(streams) {
+  streams.stringify.unpipe(streams.write)
+  streams.squeeze.unpipe(streams.stringify)
+  streams.read.unpipe(streams.squeeze)
+}
+
+function main() {
+  var Hapi = require('hapi')
+  var Good = require('good')
+
+  var server = new Hapi.Server()
+  server.connection({host:'0.0.0.0', port:8080})
+  server.route({method:'*', path:'/{path*}', handler:handler})
+  server.register([{register:Good, options:{reporters:[{reporter:ApacheLogFile, events:{response:'*'}, config:'test/test.log'}]}}], registered)
+
+  function registered(er) {
+    if (er) throw er
+
+    server.start(function() {
+      console.log('Ready...')
+    })
+  }
+
+  function handler(req, reply) {
+    var code = +(req.query.code || 200)
+    reply({ok:true, method:req.method, info:req.info, params:req.params, query:req.query})
+      .code(code)
+  }
+}
+
+
+if (require.main === module)
+  main()
