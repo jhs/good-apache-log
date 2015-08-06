@@ -37,18 +37,7 @@ function ApacheHttpdFormatter (options, transformOptions) {
 ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
   debug('ApacheHttpdFormatter transform', data)
 
-  debug('data.response = %j', !!data.response)
   var timestamp = moment(data.timestamp)
-
-  // TODO: The payload size is only known if the user adds responsePayload:true to the Good options.
-  var payload = data.responsePayload
-  if (!payload)
-    var responseBytes = '-'
-  else if (typeof payload == 'string' || Buffer.isBuffer(payload))
-    var responseBytes = payload.length
-  else
-    var responseBytes = JSON.stringify(payload).length
-
   var replacements =
     { '%%': '%'
     , '%h': data.source.remoteAddress
@@ -58,7 +47,7 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     , '%r': mkRequestLine(data)
     , '%s': data.statusCode
     , '%>s': data.statusCode
-    , '%b': responseBytes
+    , '%b': responseBytes(data)
     , '%{Referer}i': data.source.referer || '-'
     , '%{User-agent}i': data.source.userAgent || '-'
     }
@@ -78,6 +67,24 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     debug('Replace %s (%s): %s', match, val)
     return val
   }
+}
+
+//
+// Utilities
+//
+
+// Return the response payload size in bytes.
+// TODO: The payload size is only known if the user sets responsePayload:true in the Good options.
+// TODO: If the payload is an object (something for Hapi to JSON.stringify), then this will stringify it again to determine the length.
+function responseBytes(data) {
+  var payload = data.responsePayload
+  if (!payload)
+    return '-'
+
+  if (typeof payload == 'string' || Buffer.isBuffer(payload))
+    return payload.length
+
+  return JSON.stringify(payload).length
 }
 
 // Return the first line of the request.
