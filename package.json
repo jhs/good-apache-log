@@ -1,5 +1,5 @@
 {
-  "name": "good-apache-combined",
+  "name": "good-apache-log",
   "version": "1.0.0",
   "description": "Apache \"combined\" log files for Hapi",
   "main": "index.js",
