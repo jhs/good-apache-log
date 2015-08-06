@@ -25,7 +25,8 @@
   "homepage": "https://github.com/jhs/good-apache-combined#readme",
   "dependencies": {
     "good-squeeze": "^2.1.0",
-    "hoek": "^2.14.0"
+    "hoek": "^2.14.0",
+    "joi": "^6.6.1"
   },
   "peerDependencies": {
     "good": ">= 6.x.x"
