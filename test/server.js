@@ -18,7 +18,7 @@ function main() {
     if (er) throw er
 
     server.start(function() {
-      console.log('Ready...')
+      console.log('Ready; pid: %s', process.pid)
     })
   }
 }
