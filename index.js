@@ -8,14 +8,13 @@ var Stream = require('stream')
 
 var Hoek = require('hoek');
 var Joi = require('joi');
-var Moment = require('moment');
 var Squeeze = require('good-squeeze').Squeeze;
 
 var Schema = require('./schema.js')
 var LogFormat = require('./format.js')
 
 
-var DEFAULTS = {format:'combined', separator:'\n', hup:false}
+var DEFAULTS = {format:'combined', separator:'\n', hup:true}
 
 
 function ApacheLogFile (events, config) {
@@ -51,15 +50,13 @@ ApacheLogFile.prototype.init = function (stream, emitter, callback) {
     debug('Listen to SIGHUP')
     process.on('SIGHUP', function() {
       debug('Received SIGHUP')
-      self.teardown()
-      self.openLog()
+      self._reopen()
     })
   }
 
   this._streams.write = this._buildWriteStream()
   this._streams.read = stream
-
-  pipeLine(this._streams)
+  this._pipeline()
 
   callback()
 }
@@ -71,54 +68,28 @@ ApacheLogFile.prototype._buildWriteStream = function () {
   var result = fs.createWriteStream(self._settings.file, {flags:'a', end:false, encoding:'utf8'})
   result.once('error', function (er) {
     console.error(er)
-    tearDown(self._streams)
+    self._teardown()
   })
 
   return result
 }
 
-
-//internals.setUpRotate = function (reporter, period) {
-//
-//    var now = Moment.utc();
-//
-//    var timeout;
-//
-//    period = period.toLowerCase();
-//    now.endOf(internals.timeMap[period]);
-//    timeout = now.valueOf() - Date.now();
-//
-//    reporter._state.timeout = Bt.setTimeout(function () {
-//
-//        internals.rotate(reporter, period);
-//    }, timeout);
-//
-//};
-//
-//
-//internals.rotate = function (reporter, period) {
-//
-//    internals.tearDown(reporter._streams);
-//    reporter._streams.write = reporter._buildWriteStream();
-//    internals.pipeLine(reporter._streams);
-//    internals.setUpRotate(reporter, period);
-//};
-//
-//
-
-//
-// Utilities
-//
-
-function pipeLine (streams) {
-  streams.read
-    .pipe(streams.squeeze)
-    .pipe(streams.formatter)
-    .pipe(streams.write)
+ApacheLogFile.prototype._reopen = function() {
+  debug('Re-open log file')
+  this._teardown()
+  this._streams.write = this._buildWriteStream()
+  this._pipeline()
 }
 
-function tearDown(streams) {
-  streams.formatter.unpipe(streams.write)
-  streams.squeeze.unpipe(streams.formatter)
-  streams.read.unpipe(streams.squeeze)
+ApacheLogFile.prototype._pipeline = function() {
+  this._streams.read
+    .pipe(this._streams.squeeze)
+    .pipe(this._streams.formatter)
+    .pipe(this._streams.write)
+}
+
+ApacheLogFile.prototype._teardown = function() {
+  this._streams.formatter.unpipe(this._streams.write)
+  this._streams.squeeze.unpipe(this._streams.formatter)
+  this._streams.read.unpipe(this._streams.squeeze)
 }
