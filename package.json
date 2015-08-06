@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jhs/good-apache-combined.git"
+    "url": "git+https://github.com/jhs/good-apache-log.git"
   },
   "keywords": [
     "hapi",
@@ -20,9 +20,9 @@
   "author": "Jason Smith <jason.h.smith@gmail.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/jhs/good-apache-combined/issues"
+    "url": "https://github.com/jhs/good-apache-log/issues"
   },
-  "homepage": "https://github.com/jhs/good-apache-combined#readme",
+  "homepage": "https://github.com/jhs/good-apache-log#readme",
   "dependencies": {
     "debug": "^2.2.0",
     "good-squeeze": "^2.1.0",
