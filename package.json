@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/jhs/good-apache-combined/issues"
   },
-  "homepage": "https://github.com/jhs/good-apache-combined#readme"
+  "homepage": "https://github.com/jhs/good-apache-combined#readme",
+  "dependencies": {
+    "good-squeeze": "^2.1.0"
+  }
 }
