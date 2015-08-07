@@ -13,6 +13,8 @@ var MOMENT_FORMAT = '[[]DD/MMM/YYYY:HH:mm:ss Z[]]'
 
 var DEFAULT = {format:'combined', separator:'\n'}
 var FORMATS = { 'combined': '%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"'
+              , 'common'  : '%h %l %u %t \"%r\" %>s %b'
+              , 'referer' : '%{Referer}i -> %U'
               }
 
 
@@ -45,6 +47,7 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     , '%h': source.remoteAddress || '-'
     , '%l': '-'
     , '%u': '-'
+    , '%U': data.path
     , '%t': timestamp.format(MOMENT_FORMAT)
     , '%r': mkRequestLine(data)
     , '%s': data.statusCode

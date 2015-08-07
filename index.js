@@ -18,6 +18,7 @@ var OptionsSchema = Joi.alternatives().try(
   Joi.object().keys({
     file  : Joi.string().required(),
     format: Joi.string(),
+    separator: Joi.string(),
     hup: Joi.boolean()
   })
 )

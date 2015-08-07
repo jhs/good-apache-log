@@ -276,3 +276,53 @@ describe('SIGHUP handling', function() {
     }
   })
 })
+
+describe('Formatting', function() {
+  it('Supports arbitrary format strings', function(done) {
+    var file = Hoek.uniqueFilename(internals.tempDir)
+    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'Sent %s to %h', separator:'\r\n'})
+    var ee = new EventEmitter()
+    var read = internals.readStream()
+
+    reporter.init(read, ee, function (error) {
+      expect(error).to.not.exist()
+      expect(reporter._streams.write.path).to.equal(file)
+
+      reporter._streams.write.on('finish', finished)
+      read.push({ event: 'request', statusCode: 201, id:1, source:{remoteAddress:'1.1.1.1'} })
+      read.push({ event: 'request', statusCode: 202, id:2, source:{remoteAddress:'2.2.2.2'} })
+      read.push({ event: 'request', statusCode: 203, id:3, source:{remoteAddress:'3.3.3.3'} })
+      read.push(null)
+    })
+
+    function finished() {
+      var logBody = Fs.readFileSync(file, 'utf8')
+      expect(logBody).to.equal('Sent 201 to 1.1.1.1\r\nSent 202 to 2.2.2.2\r\nSent 203 to 3.3.3.3\r\n')
+      done()
+    }
+  })
+
+  it('Supports Apache httpd "nicknames"', function(done) {
+    var file = Hoek.uniqueFilename(internals.tempDir)
+    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'referer'})
+    var ee = new EventEmitter()
+    var read = internals.readStream()
+
+    reporter.init(read, ee, function (error) {
+      expect(error).to.not.exist()
+      expect(reporter._streams.write.path).to.equal(file)
+
+      reporter._streams.write.on('finish', finished)
+      read.push({ event: 'request', statusCode: 200, id:1, path:'/1', source:{referer: undefined          } })
+      read.push({ event: 'request', statusCode: 200, id:2, path:'/2', source:{referer:'http://localhost/2'} })
+      read.push({ event: 'request', statusCode: 200, id:3, path:'/3', source:{referer:'http://localhost/3'} })
+      read.push(null)
+    })
+
+    function finished() {
+      var logBody = Fs.readFileSync(file, 'utf8')
+      expect(logBody).to.equal('- -> /1\nhttp://localhost/2 -> /2\nhttp://localhost/3 -> /3\n')
+      done()
+    }
+  })
+})
