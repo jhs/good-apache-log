@@ -80,9 +80,9 @@ Example log file:
 
 These nicknames, taken from from the Apache httpd, expand to the most commonly-used log formats.
 
-* `combined`: `%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-agent}i"`
-* `common`: `%h %l %u %t "%r" %>s %b`
-* `referer`: `%{Referer}i -> %U`
+* combined: `%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-agent}i"`
+* common: `%h %l %u %t "%r" %>s %b`
+* referer: `%{Referer}i -> %U`
 
 [jhs]: https://github.com/jhs
 [good]: https://github.com/hapijs/good
