@@ -30,7 +30,7 @@ function GoodApacheLog (events, config) {
   debug('Initialize log', {events:events, config:config})
 
   config = config || false
-  Joi.assert(config, OptionsSchema);
+  Joi.assert(config, OptionsSchema, 'Invalid options');
 
   if (typeof config == 'string')
     config = { file: config }
