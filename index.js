@@ -10,11 +10,17 @@ var Hoek = require('hoek');
 var Joi = require('joi');
 var Squeeze = require('good-squeeze').Squeeze;
 
-var Schema = require('./schema.js')
 var LogFormat = require('./format.js')
 
-
 var DEFAULTS = {format:'combined', separator:'\n', hup:true}
+var OptionsSchema = Joi.alternatives().try(
+  Joi.string(),
+  Joi.object().keys({
+    file  : Joi.string().required(),
+    format: Joi.string(),
+    hup: Joi.boolean()
+  })
+)
 
 
 function GoodApacheLog (events, config) {
@@ -24,7 +30,7 @@ function GoodApacheLog (events, config) {
   debug('Initialize log', {events:events, config:config})
 
   config = config || false
-  Joi.assert(config, Schema.options);
+  Joi.assert(config, OptionsSchema);
 
   if (typeof config == 'string')
     config = { file: config }
