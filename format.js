@@ -60,7 +60,7 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     var val = replacements[match]
 
     if (!val) {
-      console.error('WARNING: Not implemented; please submit an issue or PR at %s for format: %j', Pkg.bugs.url, match)
+      console.error('WARNING: Format %j not implemented; please submit an issue or PR: %s', match, Pkg.bugs.url)
       val = '-'
     }
 
