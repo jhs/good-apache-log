@@ -1,4 +1,4 @@
-module.exports = ApacheLogFile
+module.exports = GoodApacheLog
 
 
 var fs = require('fs')
@@ -17,9 +17,9 @@ var LogFormat = require('./format.js')
 var DEFAULTS = {format:'combined', separator:'\n', hup:true}
 
 
-function ApacheLogFile (events, config) {
-  if (!(this instanceof ApacheLogFile))
-    return new ApacheLogFile(events, config)
+function GoodApacheLog (events, config) {
+  if (!(this instanceof GoodApacheLog))
+    return new GoodApacheLog(events, config)
 
   debug('Initialize log', {events:events, config:config})
 
@@ -38,7 +38,7 @@ function ApacheLogFile (events, config) {
   }
 }
 
-ApacheLogFile.prototype.init = function (stream, emitter, callback) {
+GoodApacheLog.prototype.init = function (stream, emitter, callback) {
   var self = this
   debug('Init')
 
@@ -57,7 +57,7 @@ ApacheLogFile.prototype.init = function (stream, emitter, callback) {
   callback()
 }
 
-ApacheLogFile.prototype._buildWriteStream = function () {
+GoodApacheLog.prototype._buildWriteStream = function () {
   var self = this
   debug('buildWriteStream')
 
@@ -70,21 +70,21 @@ ApacheLogFile.prototype._buildWriteStream = function () {
   return result
 }
 
-ApacheLogFile.prototype._reopen = function() {
+GoodApacheLog.prototype._reopen = function() {
   debug('Re-open log file')
   this._teardown()
   this._streams.write = this._buildWriteStream()
   this._pipeline()
 }
 
-ApacheLogFile.prototype._pipeline = function() {
+GoodApacheLog.prototype._pipeline = function() {
   this._streams.read
     .pipe(this._streams.squeeze)
     .pipe(this._streams.formatter)
     .pipe(this._streams.write)
 }
 
-ApacheLogFile.prototype._teardown = function() {
+GoodApacheLog.prototype._teardown = function() {
   this._streams.formatter.unpipe(this._streams.write)
   this._streams.squeeze.unpipe(this._streams.formatter)
   this._streams.read.unpipe(this._streams.squeeze)

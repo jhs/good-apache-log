@@ -3,7 +3,7 @@ module.exports = main
 var Hapi = require('hapi')
 var Good = require('good')
 
-var ApacheLogFile = require('../index.js')
+var GoodApacheLog = require('../index.js')
 
 
 function main() {
@@ -11,7 +11,7 @@ function main() {
   server.connection({host:'0.0.0.0', port:8080})
   server.route({method:'*', path:'/{path*}', handler:handler})
 
-  var reporter = {reporter:ApacheLogFile, events:{response:'*',tail:'*'}, config:__dirname+'/test.log'}
+  var reporter = {reporter:GoodApacheLog, events:{response:'*',tail:'*'}, config:__dirname+'/test.log'}
   server.register([{register:Good, options:{responsePayload:true, reporters:[reporter]}}], registered)
 
   function registered(er) {
