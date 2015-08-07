@@ -54,30 +54,38 @@ internals.readStream = function (done) {
 
 describe('API', function() {
   it('allows creation without using new', function (done) {
-    var reporter = GoodApacheLog({ log: '*' }, Hoek.uniqueFilename(internals.tempDir))
+    var reporter = GoodApacheLog({ response: '*' }, Hoek.uniqueFilename(internals.tempDir))
     expect(reporter._streams).to.exist()
     done()
   })
 
   it('allows creation using new', function (done) {
-    var reporter = new GoodApacheLog({ log: '*' }, Hoek.uniqueFilename(internals.tempDir))
+    var reporter = new GoodApacheLog({ response: '*' }, Hoek.uniqueFilename(internals.tempDir))
     expect(reporter._streams).to.exist()
+    done()
+  })
+
+  it('requires a "response" event in the config', function(done) {
+    expect(function() {
+      new GoodApacheLog({log:'*'}, Hoek.uniqueFilename(internals.tempDir))
+    }).to.throw(Error, /must configure "response" events/)
+
     done()
   })
 
   it('validates the options argument', function (done) {
     expect(function () {
-      var reporter = new GoodApacheLog({ log: '*' })
+      var reporter = new GoodApacheLog({ response: '*' })
     }).to.throw(Error, /"value" must be a string/)
     expect(function () {
-      var reporter = new GoodApacheLog({ log: '*' })
+      var reporter = new GoodApacheLog({ response: '*' })
     }).to.throw(Error, /"value" must be an object/)
     done()
   })
 
   it('properly sets up the path and file information if the file name is specified', function (done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ log: '*' }, file)
+    var reporter = new GoodApacheLog({ response: '*' }, file)
     var ee = new EventEmitter()
     var stream = internals.readStream()
 
@@ -93,7 +101,7 @@ describe('API', function() {
 describe('Behavior', function() {
   it('logs an error if one occurs on the write stream and tears down the pipeline', function (done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, file)
+    var reporter = new GoodApacheLog({ response: '*' }, file)
     var ee = new EventEmitter()
     var logError = console.error
     var read = internals.readStream()
@@ -115,7 +123,7 @@ describe('Behavior', function() {
 
   it('writes to the current file and does not create a new one', function (done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'%s'})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'%s'})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -126,7 +134,7 @@ describe('Behavior', function() {
       reporter._streams.write.on('finish', finished)
 
       for (var i = 0; i < 20; ++i)
-        read.push({ event: 'request', statusCode: 200, id: i, tag: 'my test ' + i })
+        read.push({ event: 'response', statusCode: 200, id: i, tag: 'my test ' + i })
       read.push(null)
 
       function finished() {
@@ -141,7 +149,7 @@ describe('Behavior', function() {
 
   it('can handle a large number of events', function (done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'x'})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'x'})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -156,14 +164,14 @@ describe('Behavior', function() {
       })
 
       for (var i = 0; i < 10000; i++)
-        read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'value for iteration ' + i })
+        read.push({ event: 'response', id: i, timestamp: Date.now(), value: 'value for iteration ' + i })
       read.push(null)
     })
   })
 
   it('will log events even after a delay', function (done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'x'})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'x'})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -179,11 +187,11 @@ describe('Behavior', function() {
       })
 
       for (var i = 0; i <= 100; i++)
-        read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'value for iteration ' + i })
+        read.push({ event: 'response', id: i, timestamp: Date.now(), value: 'value for iteration ' + i })
 
       setTimeout(function () {
         for (var i = 0; i <= 100; i++)
-          read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'inner iteration ' + i })
+          read.push({ event: 'response', id: i, timestamp: Date.now(), value: 'inner iteration ' + i })
         read.push(null)
       }, 500)
     })
@@ -193,7 +201,7 @@ describe('Behavior', function() {
 describe('SIGHUP handling', function() {
   it('re-opens the file on SIGHUP', function(done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'x'})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'x'})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -214,11 +222,11 @@ describe('SIGHUP handling', function() {
 
       // Send some requests through, then HUP, then only send one. The bytes written at finish time should be small.
       for (var i = 0; i < 5; i++)
-        read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'SIGHUP iteration ' + i })
+        read.push({ event: 'response', id: i, timestamp: Date.now(), value: 'SIGHUP iteration ' + i })
 
       process.emit('SIGHUP')
       reporter._streams.write.once('open', secondOpen)
-      read.push({ event: 'request', id:1234567, timestamp: Date.now(), value: 'First event after SIGHUP'})
+      read.push({ event: 'response', id:1234567, timestamp: Date.now(), value: 'First event after SIGHUP'})
       read.push(null)
 
       function secondOpen(newFd) {
@@ -240,7 +248,7 @@ describe('SIGHUP handling', function() {
 
   it('does not re-open the file on SIGHUP when disabled', function(done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'x', hup:false})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'x', hup:false})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -257,12 +265,12 @@ describe('SIGHUP handling', function() {
 
       // Send some requests through, then HUP, then only send one. The bytes written at finish time should be small.
       for (var i = 0; i < 5; i++) {
-        read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'SIGHUP iteration ' + i })
+        read.push({ event: 'response', id: i, timestamp: Date.now(), value: 'SIGHUP iteration ' + i })
       }
 
       process.emit('SIGHUP')
       reporter._streams.write.on('finish', finished)
-      read.push({ event: 'request', id:1234567, timestamp: Date.now(), value: 'First event after SIGHUP'})
+      read.push({ event: 'response', id:1234567, timestamp: Date.now(), value: 'First event after SIGHUP'})
       read.push(null)
 
       function finished() {
@@ -280,7 +288,7 @@ describe('SIGHUP handling', function() {
 describe('Formatting', function() {
   it('Supports arbitrary format strings', function(done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'Sent %s to %h', separator:'\r\n'})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'Sent %s to %h', separator:'\r\n'})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -289,9 +297,9 @@ describe('Formatting', function() {
       expect(reporter._streams.write.path).to.equal(file)
 
       reporter._streams.write.on('finish', finished)
-      read.push({ event: 'request', statusCode: 201, id:1, source:{remoteAddress:'1.1.1.1'} })
-      read.push({ event: 'request', statusCode: 202, id:2, source:{remoteAddress:'2.2.2.2'} })
-      read.push({ event: 'request', statusCode: 203, id:3, source:{remoteAddress:'3.3.3.3'} })
+      read.push({ event: 'response', statusCode: 201, id:1, source:{remoteAddress:'1.1.1.1'} })
+      read.push({ event: 'response', statusCode: 202, id:2, source:{remoteAddress:'2.2.2.2'} })
+      read.push({ event: 'response', statusCode: 203, id:3, source:{remoteAddress:'3.3.3.3'} })
       read.push(null)
     })
 
@@ -304,7 +312,7 @@ describe('Formatting', function() {
 
   it('Supports Apache httpd "nicknames"', function(done) {
     var file = Hoek.uniqueFilename(internals.tempDir)
-    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'referer'})
+    var reporter = new GoodApacheLog({ response: '*' }, {file:file, format:'referer'})
     var ee = new EventEmitter()
     var read = internals.readStream()
 
@@ -313,9 +321,9 @@ describe('Formatting', function() {
       expect(reporter._streams.write.path).to.equal(file)
 
       reporter._streams.write.on('finish', finished)
-      read.push({ event: 'request', statusCode: 200, id:1, path:'/1', source:{referer: undefined          } })
-      read.push({ event: 'request', statusCode: 200, id:2, path:'/2', source:{referer:'http://localhost/2'} })
-      read.push({ event: 'request', statusCode: 200, id:3, path:'/3', source:{referer:'http://localhost/3'} })
+      read.push({ event: 'response', statusCode: 200, id:1, path:'/1', source:{referer: undefined          } })
+      read.push({ event: 'response', statusCode: 200, id:2, path:'/2', source:{referer:'http://localhost/2'} })
+      read.push({ event: 'response', statusCode: 200, id:3, path:'/3', source:{referer:'http://localhost/3'} })
       read.push(null)
     })
 
