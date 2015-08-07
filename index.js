@@ -50,9 +50,9 @@ ApacheLogFile.prototype.init = function (stream, emitter, callback) {
     })
   }
 
-  this._streams.write = this._buildWriteStream()
-  this._streams.read = stream
-  this._pipeline()
+  self._streams.write = self._buildWriteStream()
+  self._streams.read = stream
+  self._pipeline()
 
   callback()
 }
