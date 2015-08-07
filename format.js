@@ -38,9 +38,11 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
   debug('ApacheHttpdFormatter transform', data)
 
   var timestamp = moment(data.timestamp)
+  var source = data.source || {}
+
   var replacements =
     { '%%': '%'
-    , '%h': data.source.remoteAddress
+    , '%h': source.remoteAddress || '-'
     , '%l': '-'
     , '%u': '-'
     , '%t': timestamp.format(MOMENT_FORMAT)
@@ -48,11 +50,13 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     , '%s': data.statusCode
     , '%>s': data.statusCode
     , '%b': responseBytes(data)
-    , '%{Referer}i': data.source.referer || '-'
-    , '%{User-agent}i': data.source.userAgent || '-'
+    , '%{Referer}i': source.referer || '-'
+    , '%{User-agent}i': source.userAgent || '-'
     }
 
   var line = this.format.replace(FORMAT_RE, replacer)
+  debug('Log line: %s', line)
+
   this.push(line + this.separator)
   next(null)
 
@@ -90,7 +94,7 @@ function responseBytes(data) {
 // Return the first line of the request.
 // TODO: This line is faked, generated from data about the request. Worse, the HTTP version is hard-coded.
 function mkRequestLine(data) {
-  var method = data.method
+  var method = data.method || 'get'
   var version = 'HTTP/1.1'
 
   var firstLog = data.log && data.log[0]
