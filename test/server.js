@@ -1,5 +1,6 @@
 module.exports = main
 
+var fs = require('fs')
 var Hapi = require('hapi')
 var Good = require('good')
 
@@ -19,6 +20,7 @@ function main() {
     if (er) throw er
 
     server.start(function() {
+      fs.writeFileSync(__dirname + '/.pid', process.pid+'\n')
       console.log('Ready; pid: %s', process.pid)
     })
   }
@@ -27,7 +29,7 @@ function main() {
 function handler(req, reply) {
   var code = +(req.query.code || 200)
   var info = JSON.parse(JSON.stringify(req.info))
-  var link = (Math.random() + '').replace(/^0\./, '')
+  var link = (Math.random() + '').replace(/^0\.\d{11}/, '')
 
   reply('Hello<p><a href="/'+link+'">Page '+link+'</a>')
     .code(code)
