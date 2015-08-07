@@ -39,8 +39,12 @@ function GoodApacheLog (events, config) {
   this._settings = Hoek.applyToDefaults(DEFAULTS, config)
   debug('Settings: %j', this._settings)
 
+  // Only process "response" events.
+  if (!events.response)
+    throw new Error('Invalid events; must configure "response" events, e.g. "response":"*"')
+
   this._streams = {
-    squeeze: Squeeze(events),
+    squeeze: Squeeze({response:events.response}),
     formatter: LogFormat(null, this._settings)
   }
 }

@@ -11,7 +11,8 @@ function main() {
   server.connection({host:'0.0.0.0', port:8080})
   server.route({method:'*', path:'/{path*}', handler:handler})
 
-  var reporter = {reporter:GoodApacheLog, events:{response:'*',tail:'*'}, config:__dirname+'/test.log'}
+  var events = {response:'*', ops:'*', log:'*', error:'*', request:'*', wreck:'*'}
+  var reporter = {reporter:GoodApacheLog, events:events, config:__dirname+'/test.log'}
   server.register([{register:Good, options:{responsePayload:true, reporters:[reporter]}}], registered)
 
   function registered(er) {
