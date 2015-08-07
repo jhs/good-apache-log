@@ -4,7 +4,7 @@
   "description": "Apache \"combined\" log files for Hapi",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/"
+    "test": "lab --timeout 5000 --threshold 100 -v -a code"
   },
   "repository": {
     "type": "git",
