@@ -1,6 +1,6 @@
 # Good-Apache-Log
 
-Apache httpd log files for Good process monitor.
+Apache httpd log files for Hapi web servers
 
 Lead Maintainer: [Jason Smith][jhs]
 
