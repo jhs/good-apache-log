@@ -189,3 +189,90 @@ describe('Behavior', function() {
     })
   })
 })
+
+describe('SIGHUP handling', function() {
+  it('re-opens the file on SIGHUP', function(done) {
+    var file = Hoek.uniqueFilename(internals.tempDir)
+    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'x'})
+    var ee = new EventEmitter()
+    var read = internals.readStream()
+
+    reporter.init(read, ee, function (error) {
+      expect(error).to.not.exist()
+      expect(reporter._streams.write.path).to.equal(file)
+
+      reporter._streams.write.on('finish', function() {
+        throw new Error('First write stream should not finish')
+      })
+
+      reporter._streams.write.once('open', firstOpen)
+    })
+
+    function firstOpen(oldFd) {
+      var oldStream = reporter._streams.write
+      expect(oldStream.path).to.equal(file)
+
+      // Send some requests through, then HUP, then only send one. The bytes written at finish time should be small.
+      for (var i = 0; i < 5; i++)
+        read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'SIGHUP iteration ' + i })
+
+      process.emit('SIGHUP')
+      reporter._streams.write.once('open', secondOpen)
+      read.push({ event: 'request', id:1234567, timestamp: Date.now(), value: 'First event after SIGHUP'})
+      read.push(null)
+
+      function secondOpen(newFd) {
+        reporter._streams.write.on('finish', function() {
+          expect(reporter._streams.write.path).to.equal(file)
+          expect(reporter._streams.write).not.to.equal(oldStream)
+          expect(newFd).not.to.equal(oldFd)
+          expect(reporter._streams.write.bytesWritten).to.equal(2)
+
+          internals.removeLog(reporter._streams.write.path)
+          expect(process.listeners('SIGHUP').indexOf(reporter._onSigHUP)).not.to.equal(-1)
+          ee.emit('stop')
+          expect(process.listeners('SIGHUP').indexOf(reporter._onSigHUP)).to.equal(-1)
+          done()
+        })
+      }
+    }
+  })
+
+  it('does not re-open the file on SIGHUP when disabled', function(done) {
+    var file = Hoek.uniqueFilename(internals.tempDir)
+    var reporter = new GoodApacheLog({ request: '*' }, {file:file, format:'x', hup:false})
+    var ee = new EventEmitter()
+    var read = internals.readStream()
+
+    reporter.init(read, ee, function (error) {
+      expect(error).to.not.exist()
+      expect(reporter._streams.write.path).to.equal(file)
+      expect(process.listeners('SIGHUP').indexOf(reporter._onSigHUP)).to.equal(-1)
+      reporter._streams.write.once('open', firstOpen)
+    })
+
+    function firstOpen(oldFd) {
+      var oldStream = reporter._streams.write
+      expect(oldStream.path).to.equal(file)
+
+      // Send some requests through, then HUP, then only send one. The bytes written at finish time should be small.
+      for (var i = 0; i < 5; i++) {
+        read.push({ event: 'request', id: i, timestamp: Date.now(), value: 'SIGHUP iteration ' + i })
+      }
+
+      process.emit('SIGHUP')
+      reporter._streams.write.on('finish', finished)
+      read.push({ event: 'request', id:1234567, timestamp: Date.now(), value: 'First event after SIGHUP'})
+      read.push(null)
+
+      function finished() {
+        expect(reporter._streams.write.path).to.equal(file)
+        expect(reporter._streams.write).to.equal(oldStream)
+        expect(reporter._streams.write.bytesWritten).to.equal(12)
+
+        internals.removeLog(reporter._streams.write.path)
+        done()
+      }
+    }
+  })
+})

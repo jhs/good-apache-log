@@ -48,12 +48,21 @@ GoodApacheLog.prototype.init = function (stream, emitter, callback) {
   var self = this
   debug('Init')
 
-  if (self._settings.hup) {
+  if (!self._settings.hup)
+    debug('No listen to SIGHUP')
+  else {
     debug('Listen to SIGHUP')
-    process.on('SIGHUP', function() {
-      debug('Received SIGHUP')
-      self._reopen()
+    self._onSigHUP = onSigHUP
+    process.on('SIGHUP', onSigHUP)
+    emitter.on('stop', function() {
+      debug('Events stopped; remove onSigHUP listener')
+      process.removeListener('SIGHUP', onSigHUP)
     })
+  }
+
+  function onSigHUP() {
+    debug('Received SIGHUP')
+    self._reopen()
   }
 
   self._streams.write = self._buildWriteStream()
