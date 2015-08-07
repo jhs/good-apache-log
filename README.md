@@ -6,9 +6,9 @@ Lead Maintainer: [Jason Smith][jhs]
 
 ## Overview
 
-Good-Apache-Log is a [Good][good] reporter to write [Hapi][hapi] server logs in the Apache [combined][combined-format] or [common][common-format] log format.
+Good-Apache-Log makes [Hapi][hapi] write server logs in the server logs in the Apache [combined][combined-format] or [common][common-format] log format, via the [Good][good] reporting framework.
 
-You know: this one&mdash;the ubiquitous format every tool on the Internet can process.
+The Apache format? You know: this one&mdash;the ubiquitous format every tool on the Internet can process.
 
     127.0.0.1 - - [07/Aug/2015:14:01:21 +07:00] "GET / HTTP/1.1" 200 39 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12"
     127.0.0.1 - - [07/Aug/2015:14:01:21 +07:00] "GET /favicon.ico HTTP/1.1" 200 39 "http://localhost:8080/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12"
