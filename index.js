@@ -42,10 +42,6 @@ ApacheLogFile.prototype.init = function (stream, emitter, callback) {
   var self = this
   debug('Init')
 
-  //emitter.on('stop', function () {
-  //  debug('Stop')
-  //})
-
   if (self._settings.hup) {
     debug('Listen to SIGHUP')
     process.on('SIGHUP', function() {
