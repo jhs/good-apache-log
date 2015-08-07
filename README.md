@@ -1,4 +1,4 @@
-# good-apache-log
+# Good-Apache-Log
 
 Apache httpd log files for Good process monitor.
 
