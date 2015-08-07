@@ -26,7 +26,8 @@ Place Good-Apache-Log as a reporter in your [Good][good] configuration.
 ``` js
 var logFile = "my-server.log"
 var reporters = [ {reporter:GoodApacheLog, events:{response:'*'}, config:logFile} ]
-server.register([{register:Good, options:{responsePayload:true, reporters:reporters}}], function(er) {
+var goodPlugin = {register:Good, options:{responsePayload:true, reporters:reporters}}
+server.register([goodPlugin], function(er) {
   if (!er)
     console.log('GoodApacheLog is registered.')
 })
