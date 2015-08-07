@@ -46,7 +46,7 @@ Usually, you can set the reporter `config` value to the path to your log file. H
 However, for more detailed control, `config` can be an object with these keys:
 
 * **file** - The path to the log file
-* **format** - The log format to use, default is `"combined"`; see [Log Formats][#log-formats] below
+* **format** - The log format to use, default is `"combined"`; see [Log Formats](#log-formats) below
 * **separator** - The separator between log lines, default is `"\n"`
 * **hup** - Boolean; if `true`, Good-Apache-Log will listen to `SIGHUP` and re-open its log file; default is `true`
 
