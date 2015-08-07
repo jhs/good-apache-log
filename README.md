@@ -78,7 +78,7 @@ Example log file:
 
 ### Supported nicknames
 
-These nicknames, taken from from the Apache httpd, expand to the most commonly-used log formats.
+These nicknames, taken from from the Apache httpd documentation, expand to the most commonly-used log formats.
 
 * combined: `%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-agent}i"`
 * common: `%h %l %u %t "%r" %>s %b`
