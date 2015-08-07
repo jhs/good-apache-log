@@ -21,6 +21,10 @@ In other words, Good-Apache-Log makes your Hapi server a much more friendly dev-
 
 ## Usage
 
+Install this package with npm:
+
+    $ npm install good-apache-log
+
 Place Good-Apache-Log as a reporter in your [Good][good] configuration.
 
 ``` js
