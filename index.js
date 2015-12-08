@@ -13,7 +13,7 @@ var Squeeze = require('good-squeeze').Squeeze;
 var LogFormat = require('./format.js')
 
 var DEFAULTS = {format:'combined', separator:'\n', hup:true}
-var SinkSchema = [Joi.string().required(), Joi.object().type(Stream.Stream)];
+var SinkSchema = [Joi.string().required(), Joi.object().type(Stream.Stream).required()];
 var OptionsSchema = Joi.alternatives().try(
   SinkSchema,
   Joi.object().keys({

@@ -45,9 +45,7 @@ See [test/server.js][server.js] for an example of a very simple Hapi server that
 
 ## Configuration
 
-Usually, you can set the reporter `config` value to the path to your log file,
-or to an existing stream (eg: console.stdout). Hapi will now automatically
-append logs to that file/stream, and for a file if you send a `HUP` signal to your server, it will re-open that file.
+Usually, you can set the reporter `config` value to the path to your log file, or to an existing stream (eg: console.stdout). Hapi will now automatically append logs to that file/stream, and for a file if you send a `HUP` signal to your server, it will re-open that file.
 
 However, for more detailed control, `config` can be an object with these keys:
 
