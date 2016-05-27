@@ -13,10 +13,11 @@ var Squeeze = require('good-squeeze').Squeeze;
 var LogFormat = require('./format.js')
 
 var DEFAULTS = {format:'combined', separator:'\n', hup:true}
+var SinkSchema = [Joi.string().required(), Joi.object().type(Stream.Stream).required()];
 var OptionsSchema = Joi.alternatives().try(
-  Joi.string(),
+  SinkSchema,
   Joi.object().keys({
-    file  : Joi.string().required(),
+    file  : SinkSchema,
     format: Joi.string(),
     separator: Joi.string(),
     hup: Joi.boolean()
@@ -33,10 +34,10 @@ function GoodApacheLog (events, config) {
   config = config || false
   Joi.assert(config, OptionsSchema, 'Invalid options');
 
-  if (typeof config == 'string')
+  if (typeof config == 'string' || config instanceof Stream.Stream)
     config = { file: config }
 
-  this._settings = Hoek.applyToDefaults(DEFAULTS, config)
+  this._settings = Hoek.applyToDefaultsWithShallow(DEFAULTS, config, ['file'])
   debug('Settings: %j', this._settings)
 
   // Only process "response" events.
@@ -80,6 +81,9 @@ GoodApacheLog.prototype.init = function (stream, emitter, callback) {
 GoodApacheLog.prototype._buildWriteStream = function () {
   var self = this
   debug('buildWriteStream')
+
+  if (self._settings.file instanceof Stream.Stream)
+    return self._settings.file;
 
   var result = fs.createWriteStream(self._settings.file, {flags:'a', end:false, encoding:'utf8'})
   result.once('error', function (er) {
