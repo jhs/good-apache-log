@@ -31,7 +31,7 @@
     "moment": "^2.10.6"
   },
   "peerDependencies": {
-    "good": ">= 6.x.x"
+    "good": ">= 7.x.x"
   },
   "devDependencies": {
     "code": "^1.5.0",
