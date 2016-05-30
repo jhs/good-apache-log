@@ -29,7 +29,7 @@ var OptionsSchema = Joi.alternatives().try(
 util.inherits(GoodApacheLog, Stream.Transform)
 function GoodApacheLog (config) {
   if (!(this instanceof GoodApacheLog))
-    return new GoodApacheLog(events, config)
+    return new GoodApacheLog(config)
 
   var self = this
   Stream.Transform.call(self, {objectMode: true})
@@ -61,6 +61,9 @@ function GoodApacheLog (config) {
     })
   }
 
+  // Export onSigHUP for the test suite to use.
+  self._onSigHUP = onSigHUP
+
   function onSigHUP() {
     debug('Received SIGHUP')
     self._reopen()
@@ -90,7 +93,7 @@ GoodApacheLog.prototype._buildWriteStream = function () {
 }
 
 GoodApacheLog.prototype._teardown = function() {
-  this._streams.formatter.unpipe(this._logfile)
+  this._formatter.unpipe(this._logfile)
 }
 
 GoodApacheLog.prototype._transform = function(data, enc, callback) {
