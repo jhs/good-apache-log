@@ -97,11 +97,11 @@ GoodApacheLog.prototype._teardown = function() {
 }
 
 GoodApacheLog.prototype._transform = function(data, enc, callback) {
+  if ('string' == typeof data) {
+    data = JSON.parse(data);
+  }
+
   // Only process "response" events.
-   if ('string' == typeof data) {
-     data = JSON.parse(data);
-   }
- 
   if (data.event != 'response') {
     debug('Bad event for good-apache-log: %j', data.event)
     return next()
