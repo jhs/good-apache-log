@@ -37,6 +37,9 @@ function ApacheHttpdFormatter (options, transformOptions) {
 
 
 ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
+  if ('string' == typeof data) {
+    data = JSON.parse(data);
+  }
   debug('ApacheHttpdFormatter transform', data)
 
   var timestamp = moment(data.timestamp)
@@ -56,7 +59,7 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     , '%{Referer}i': source.referer || '-'
     , '%{User-agent}i': source.userAgent || '-'
     }
-
+  
   var line = this.format.replace(FORMAT_RE, replacer)
   debug('Log line: %s', line)
 

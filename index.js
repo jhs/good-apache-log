@@ -30,7 +30,7 @@ util.inherits(GoodApacheLog, Stream.Transform)
 function GoodApacheLog (config) {
   if (!(this instanceof GoodApacheLog))
     return new GoodApacheLog(config)
-
+  
   var self = this
   Stream.Transform.call(self, {objectMode: true})
 
@@ -98,6 +98,10 @@ GoodApacheLog.prototype._teardown = function() {
 
 GoodApacheLog.prototype._transform = function(data, enc, callback) {
   // Only process "response" events.
+   if ('string' == typeof data) {
+     data = JSON.parse(data);
+   }
+ 
   if (data.event != 'response') {
     debug('Bad event for good-apache-log: %j', data.event)
     return next()
