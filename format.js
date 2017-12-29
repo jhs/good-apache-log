@@ -53,8 +53,10 @@ ApacheHttpdFormatter.prototype._transform = function (data, _encoding, next) {
     , '%s': data.statusCode
     , '%>s': data.statusCode
     , '%b': responseBytes(data)
+    , '%T': data.responseTime+"ms"
     , '%{Referer}i': source.referer || '-'
     , '%{User-agent}i': source.userAgent || '-'
+    , '%{X-Forwarded-For}i': data.headers && data.headers['x-forwarded-for'] || '-'
     }
 
   var line = this.format.replace(FORMAT_RE, replacer)
